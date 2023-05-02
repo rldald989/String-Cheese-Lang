@@ -1,0 +1,7 @@
+int eric : 24
+float urmom : 2147483648
+float printThis : 10.5
+
+print : eric
+print : urmom
+print : "Hello World"
