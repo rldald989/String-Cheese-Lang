@@ -16,7 +16,23 @@ namespace strc{
         Logger log;
     public:
         Parser(std::string file_name): lex(file_name), identifiers(lex.GetIdentifiers()){}
-        ~Parser(){}
+        ~Parser()
+        {
+            for(size_t i = 0; i < ints.size(); i++)
+            {
+                delete ints[i];
+            }
+
+            for(size_t i = 0; i < floats.size(); i++)
+            {
+                delete floats[i];
+            }
+
+            for(size_t i = 0; i < strings.size(); i++)
+            {
+                delete strings[i];
+            }
+        }
 
         void RemoveCharacter(std::string* strToRemove, char charToRemove)
         {
