@@ -53,7 +53,7 @@ namespace strc{
             std::ifstream code;
             std::string temp;
             
-            code.open("main.strc");
+            code.open(file);
 
             while(code >> temp >> std::ws)
             {

@@ -1,0 +1,22 @@
+string who : "Who are you going to kill?"
+string who_answer : " "
+
+string why : "Why are you going to kill "
+string ? : "?"
+string why_answer : " "
+
+string how : "How are you going to kill "
+string how_answer : " "
+
+printl : who
+readl : who_answer
+
+print : why
+print : who_answer
+printl : ?
+readl : why_answer
+
+print : how
+print : who_answer
+printl : ?
+readl : how_answer

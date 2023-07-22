@@ -1,13 +1,14 @@
-#include "../headers/Interpreter.hpp"
+#include "../headers/StrcMake.hpp"
 
 int main()
 {
-    strc::Interpreter strcInterpreter("main.strc");
-    strcInterpreter.Run();
+    std::string StrcMakeFile = "StrcMake.stcm";
+    StrcMake strcMake(StrcMakeFile);
 
-    //for(int i = 0; i < ints.size(); i++){
-        //std::cout <<
-        //"var name: " << ints[i].name << 
-        //" var value: " << ints[i].value << std::endl;
-    //}
+    strcMake.CheckRun();
+    strcMake.Run();
+    strcMake.Print();
+
+    //strc::Interpreter strcInterpreter(fileName);
+    //strcInterpreter.Run();
 }

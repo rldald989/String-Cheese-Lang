@@ -19,5 +19,5 @@ clean:
 .PHONY run:
 	make clean
 	make
-	clear
+	cls
 	./strc

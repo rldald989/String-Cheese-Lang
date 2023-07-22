@@ -4,6 +4,11 @@
 #include <string>
 #include <algorithm>
 
+void RemoveCharacter(std::string* strToRemove, char charToRemove)
+{
+    strToRemove->erase(remove(strToRemove->begin(), strToRemove->end(), charToRemove), strToRemove->end());
+}
+
 namespace strc{
     class Parser
     {
@@ -34,10 +39,7 @@ namespace strc{
             }
         }
 
-        void RemoveCharacter(std::string* strToRemove, char charToRemove)
-        {
-            strToRemove->erase(remove(strToRemove->begin(), strToRemove->end(), charToRemove), strToRemove->end());
-        }
+        
 
         void CheckInts(int i)
         {
