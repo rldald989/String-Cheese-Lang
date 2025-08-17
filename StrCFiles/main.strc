@@ -1,9 +1,10 @@
-
 string name : " "
 string inputMsg : "Type in your name: "
-string message : ", you are awesome!"
+string outputMsg : ", you are awsome!"
 
 printl : inputMsg
+
 readl : name
+
 print : name
-printl : message
+printl : outputMsg

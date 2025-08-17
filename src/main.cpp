@@ -1,14 +1,23 @@
-#include "../headers/StrcMake.hpp"
+#include "../headers/Runtime.hpp"
 
-int main()
+
+
+int main(int argc, char *argv[])
 {
-    std::string StrcMakeFile = "StrcMake.stcm";
-    StrcMake strcMake(StrcMakeFile);
 
-    strcMake.CheckRun();
-    strcMake.Run();
-    strcMake.Print();
+    strc::Lexer lexer(argv[1]);
 
-    //strc::Interpreter strcInterpreter(fileName);
-    //strcInterpreter.Run();
+    lexer.lex();
+
+    std::vector<std::string>& id = lexer.GetIdentifiers();
+
+    strc::Parser parser(lexer);
+    
+    strc::Runtime runtime(parser);
+
+    runtime.run();
+    
+    parser.ReleaseData();
+
+    return 0;
 }
