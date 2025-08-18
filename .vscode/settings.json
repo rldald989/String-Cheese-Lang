@@ -67,7 +67,9 @@
         "xlocmon": "cpp",
         "xloctime": "cpp",
         "map": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "list": "cpp",
+        "xhash": "cpp"
     },
     "makefile.configureOnOpen": false
 }

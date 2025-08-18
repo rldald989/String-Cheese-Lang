@@ -2,6 +2,7 @@
 
 #include "Parser.hpp"
 #include <map>
+#include <string>
 
 namespace strc{
 
@@ -25,6 +26,7 @@ namespace strc{
         std::vector<INT*>& m_ints;
         std::vector<FLOAT*>& m_floats;
         std::vector<STRING*>& m_strings;
+        std::unordered_map<int, std::string>& no_func;
         std::map <int, Instruction> m_instructions;
         int m_position;
 
@@ -52,6 +54,7 @@ namespace strc{
                     output_buffer += peek();
                     m_position++;
                 }
+                
                 output = new STRING(MakeString(output_buffer, " "));
             }
             else{
@@ -66,6 +69,7 @@ namespace strc{
             : m_parser(parser), ids(m_parser.GetIdentifiers()), 
             m_ints(m_parser.GetInts()), m_floats(m_parser.GetFloats()), 
             m_strings(m_parser.GetStrings()), 
+            no_func(m_parser.GetNoFunc()),
             m_position(0)
         {
             for(int i = 0; i < ids.size(); i++){
@@ -84,24 +88,26 @@ namespace strc{
                     m_position++;
                     if(peek() == ":"){
                         m_position++;
-                        for(auto& i : m_ints){
-                            if(peek() == i->name){
-                                m_instructions[m_position] = Instruction({instruction_type::PRINT, i});
+                        if(peek() != "\""){
+                            for(auto& i : m_ints){
+                                if(peek() == i->name){
+                                    m_instructions[m_position] = Instruction({instruction_type::PRINT, i});
+                                }
+                            }
+                            for(auto& f : m_floats){
+                                if(peek() == f->name){
+                                    m_instructions[m_position] = Instruction({instruction_type::PRINT, f});
+                                }
+                            }
+                            for(auto& s : m_strings){
+                                if(peek() == s->name){
+                                    m_instructions[m_position] = Instruction({instruction_type::PRINT, s});
+                                }
                             }
                         }
-                        for(auto& f : m_floats){
-                            if(peek() == f->name){
-                                m_instructions[m_position] = Instruction({instruction_type::PRINT, f});
-                            }
+                        else{
+                            m_instructions[m_position] = Instruction({instruction_type::PRINT, detect_string()});
                         }
-                        for(auto& s : m_strings){
-                            if(peek() == s->name){
-                                m_instructions[m_position] = Instruction({instruction_type::PRINT, s});
-                            }
-                        }
-
-                        
-                        m_instructions[m_position] = Instruction({instruction_type::PRINT, detect_string()});
                         
                     }
                     else{
@@ -122,23 +128,26 @@ namespace strc{
                     m_position++;
                     if(peek() == ":"){
                         m_position++;
-                        for(auto& i : m_ints){
+                        if(peek() != "\""){
+                            for(auto& i : m_ints){
                             if(peek() == i->name){
                                 m_instructions[m_position] = Instruction({instruction_type::PRINTL, i});
                             }
-                        }
-                        for(auto& f : m_floats){
-                            if(peek() == f->name){
-                                m_instructions[m_position] = Instruction({instruction_type::PRINTL, f});
+                            }
+                            for(auto& f : m_floats ){
+                                if(peek() == f->name){
+                                    m_instructions[m_position] = Instruction({instruction_type::PRINTL, f});
+                                }
+                            }
+                            for(auto& s : m_strings){
+                                if(peek() == s->name){
+                                    m_instructions[m_position] = Instruction({instruction_type::PRINTL, s});
+                                }
                             }
                         }
-                        for(auto& s : m_strings){
-                            if(peek() == s->name){
-                                m_instructions[m_position] = Instruction({instruction_type::PRINTL, s});
-                            }
+                        else{
+                            m_instructions[m_position] = Instruction({instruction_type::PRINTL, detect_string()});
                         }
-
-                        m_instructions[m_position] = Instruction({instruction_type::PRINTL, detect_string()});
                     }
                     else{
                         std::cout << "SYNTAX ERROR" << std::endl;
@@ -203,6 +212,7 @@ namespace strc{
         }
 
         void run(){
+
             check_print();
             check_print_l();
             check_read();
