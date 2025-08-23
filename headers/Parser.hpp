@@ -21,7 +21,6 @@ namespace strc{
         std::vector<std::string>& identifiers;
         std::unordered_map<int, std::string> m_no_func;
         Lexer m_lexer;
-        Logger log;
     public:
         Parser(Lexer& lexer): m_lexer(lexer), identifiers(m_lexer.GetIdentifiers()){}
         ~Parser()
@@ -94,8 +93,31 @@ namespace strc{
                             j++;
                         }
                     }
+                    
+                    strings.push_back(new STRING(strc::MakeString(new std::string(output_buffer), identifiers[i + 1])));
 
-                    strings.push_back(new STRING(strc::MakeString(output_buffer, identifiers[i + 1])));
+                    if(output_buffer == "\\n"){
+                        strings.back()->conv_value = new std::string("");
+                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::NEWLINE});
+                    }
+                    else if(output_buffer == "\\t"){
+                        strings.back()->conv_value = new std::string("");
+                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::TAB});
+                    }
+                    else if(output_buffer == "\\\\"){
+                        strings.back()->conv_value = new std::string("");
+                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::BACKSLASH_LIT});
+                    }
+                    else if(output_buffer == "\\\""){
+                        strings.back()->conv_value = new std::string("");
+                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::DOUBLE_QUOTE});
+                    }
+                    else if(output_buffer == "\\\'"){
+                        strings.back()->conv_value = new std::string("");
+                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::SINGLE_QUOTE});
+                    }
+                    
+
                 }
                 else
                 {   
@@ -116,6 +138,10 @@ namespace strc{
 
         std::vector<strc::STRING*>& GetStrings()
         {
+            for (auto& n : m_no_func)
+            {
+                std::cout << n.first << std::endl;
+            }
             return strings;
         }
 

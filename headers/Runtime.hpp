@@ -15,7 +15,7 @@ namespace strc{
 
     struct Instruction{
         instruction_type type;
-        Variable* value;
+        Variable value;
     };
 
     class Runtime
@@ -44,9 +44,8 @@ namespace strc{
             return ids[m_position++];
         }
 
-        STRING* detect_string(){
+        std::string detect_string(){
             std::string output_buffer;
-            STRING* output;
             if(peek() == "\"")
             {
                 m_position++;
@@ -54,14 +53,11 @@ namespace strc{
                     output_buffer += peek();
                     m_position++;
                 }
-                
-                output = new STRING(MakeString(output_buffer, " "));
-            }
-            else{
-                output = {};
+                if(output_buffer == "\\n"){
+                }
             }
 
-            return output;
+            return output_buffer;
         }
 
     public:
@@ -79,11 +75,16 @@ namespace strc{
                 //std::cout << ids[i] << std::endl;
             }
         }
-        ~Runtime(){}
+        ~Runtime()
+        {
+            for(auto& i : m_instructions){
+                delete i.second.value.conv_value;
+            }
+        }
 
-        void check_print(){
+        void check_print(instruction_type instruction, std::string instruction_name){
             while(peek() != "\0"){
-                if(peek() == "print"){
+                if(peek() == instruction_name){
                     //std::cout << "found print" << std::endl;
                     m_position++;
                     if(peek() == ":"){
@@ -91,27 +92,28 @@ namespace strc{
                         if(peek() != "\""){
                             for(auto& i : m_ints){
                                 if(peek() == i->name){
-                                    m_instructions[m_position] = Instruction({instruction_type::PRINT, i});
+                                    m_instructions[m_position] = Instruction({instruction, i->conv_value});
                                 }
                             }
                             for(auto& f : m_floats){
                                 if(peek() == f->name){
-                                    m_instructions[m_position] = Instruction({instruction_type::PRINT, f});
+                                    m_instructions[m_position] = Instruction({instruction, f->conv_value});
                                 }
                             }
                             for(auto& s : m_strings){
                                 if(peek() == s->name){
-                                    m_instructions[m_position] = Instruction({instruction_type::PRINT, s});
+                                    m_instructions[m_position] = Instruction({instruction, s->conv_value});
                                 }
                             }
                         }
                         else{
-                            m_instructions[m_position] = Instruction({instruction_type::PRINT, detect_string()});
+                            std::string* detected_str = new std::string(detect_string());
+                            m_instructions[m_position] = Instruction({instruction, detected_str});
                         }
                         
                     }
                     else{
-                        std::cout << "SYNTAX ERROR" << std::endl;
+                        std::cout << "SYNTAX ERROR at " << peek(0) << std::endl;
                     }
 
                 }
@@ -122,85 +124,21 @@ namespace strc{
             m_position = 0;
         }
 
-        void check_print_l(){
+        void check_read(instruction_type instruction, std::string instruction_name){
             while(peek() != "\0"){
-                if(peek() == "printl"){
-                    m_position++;
-                    if(peek() == ":"){
-                        m_position++;
-                        if(peek() != "\""){
-                            for(auto& i : m_ints){
-                            if(peek() == i->name){
-                                m_instructions[m_position] = Instruction({instruction_type::PRINTL, i});
-                            }
-                            }
-                            for(auto& f : m_floats ){
-                                if(peek() == f->name){
-                                    m_instructions[m_position] = Instruction({instruction_type::PRINTL, f});
-                                }
-                            }
-                            for(auto& s : m_strings){
-                                if(peek() == s->name){
-                                    m_instructions[m_position] = Instruction({instruction_type::PRINTL, s});
-                                }
-                            }
-                        }
-                        else{
-                            m_instructions[m_position] = Instruction({instruction_type::PRINTL, detect_string()});
-                        }
-                    }
-                    else{
-                        std::cout << "SYNTAX ERROR" << std::endl;
-                    }
-
-                }
-                else{
-                    m_position++;
-                }
-            }
-            m_position = 0;
-        }
-
-        void check_read(){
-            while(peek() != "\0"){
-                if(peek() == "read"){
+                if(peek() == instruction_name){
                     //std::cout << "found print" << std::endl;
                     m_position++;
                     if(peek() == ":"){
                         m_position++;
                         for(auto& s : m_strings){
                             if(peek() == s->name){
-                                m_instructions[m_position] = Instruction({instruction_type::READ, s});
+                                m_instructions[m_position] = Instruction({instruction, s->conv_value});
                             }
                         }
                     }
                     else{
-                        std::cout << "SYNTAX ERROR" << std::endl;
-                    }
-
-                }
-                else{
-                    m_position++;
-                }
-            }
-            m_position = 0;
-        }
-
-        void check_read_l(){
-            while(peek() != "\0"){
-                if(peek() == "readl"){
-                    //std::cout << "found print" << std::endl;
-                    m_position++;
-                    if(peek() == ":"){
-                        m_position++;
-                        for(auto& s : m_strings){
-                            if(peek() == s->name){
-                                m_instructions[m_position] = Instruction({instruction_type::READL, s});
-                            }
-                        }
-                    }
-                    else{
-                        std::cout << "SYNTAX ERROR" << std::endl;
+                        std::cout << "SYNTAX ERROR at " << peek(0) << std::endl;
                     }
 
                 }
@@ -212,24 +150,23 @@ namespace strc{
         }
 
         void run(){
-
-            check_print();
-            check_print_l();
-            check_read();
-            check_read_l();
+            check_print(instruction_type::PRINT, "print");
+            check_print(instruction_type::PRINTL, "printl");
+            check_read(instruction_type::READ, "read");
+            check_read(instruction_type::READL, "readl");
 
             for(auto& i : m_instructions){
                 if(i.second.type == instruction_type::READL){
-                    std::getline(std::cin, i.second.value->conv_value);
+                    std::getline(std::cin, *i.second.value.conv_value);
                 }
                 else if(i.second.type == instruction_type::READ){
-                    std::cin >> i.second.value->conv_value;
+                    std::cin >> *i.second.value.conv_value;
                 }
                 else if(i.second.type == instruction_type::PRINT){
-                    std::cout << i.second.value->conv_value;
+                    std::cout << *i.second.value.conv_value;
                 }
                 else if(i.second.type == instruction_type::PRINTL){
-                    std::cout << i.second.value->conv_value << std::endl;
+                    std::cout << *i.second.value.conv_value << std::endl;
                 }
                 
             }

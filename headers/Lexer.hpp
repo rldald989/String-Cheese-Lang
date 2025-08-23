@@ -4,11 +4,25 @@
 #include <vector>
 #include <fstream>
 #include <typeinfo>
-#include "Logger.hpp"
+#include "Logger.h"
 
 namespace strc{
 
-    struct Variable{std::string conv_value;};
+    struct Variable{std::string* conv_value;};
+
+    enum class sub_instruction_type
+    {
+        NEWLINE,
+        TAB,
+        BACKSLASH_LIT,
+        DOUBLE_QUOTE,
+        SINGLE_QUOTE
+    };
+
+    struct SubInstruction{
+        int value;
+        sub_instruction_type type;
+    };
 
     struct INT : public Variable
     {
@@ -18,7 +32,7 @@ namespace strc{
 
     INT MakeInt(int value, std::string name)
     {
-        INT i = {std::to_string(value), value, name};
+        INT i = {new std::string(std::to_string(value)), value, name};
         return i;
     }
 
@@ -30,22 +44,23 @@ namespace strc{
 
     FLOAT MakeFloat(float value, std::string name)
     {
-        FLOAT i = {std::to_string(value), value, name};
+        FLOAT i = {new std::string(std::to_string(value)), value, name};
         return i;
     }
 
     struct STRING : public Variable
     {
         std::string name;
+        std::vector<SubInstruction> sub_instructions;
     };
 
-    STRING MakeString(std::string value, std::string name)
+    STRING MakeString(std::string* value, std::string name)
     {
         STRING i = {value, name};
         return i;
     }
 
-    std::string alpha_tokens[] = 
+    static std::string alpha_tokens[] = 
     {
         "int",
         "string",
@@ -56,11 +71,12 @@ namespace strc{
         "readl"
     };
 
-    char punct_tokens[] = {
+    static char punct_tokens[] = {
         ':',
         ';',
         '?',
         '!',
+        '.',
         '\"'
     };
 
