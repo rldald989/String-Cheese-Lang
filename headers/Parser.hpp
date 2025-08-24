@@ -31,16 +31,19 @@ namespace strc{
         void ReleaseData(){
             for(size_t i = 0; i < ints.size(); i++)
             {
+                delete ints[i]->conv_value;
                 delete ints[i];
             }
 
             for(size_t i = 0; i < floats.size(); i++)
             {
+                delete floats[i]->conv_value;
                 delete floats[i];
             }
 
             for(size_t i = 0; i < strings.size(); i++)
             {
+                delete strings[i]->conv_value;
                 delete strings[i];
             }
         }
@@ -89,10 +92,13 @@ namespace strc{
                     {
                         j++;
                         while(identifiers[i+j] != "\""){
-                            output_buffer += identifiers[i+j].c_str();
+                            output_buffer += identifiers[i+j];
                             j++;
+
                         }
                     }
+
+                    
                     
                     strings.push_back(new STRING(strc::MakeString(new std::string(output_buffer), identifiers[i + 1])));
 
@@ -138,10 +144,6 @@ namespace strc{
 
         std::vector<strc::STRING*>& GetStrings()
         {
-            for (auto& n : m_no_func)
-            {
-                std::cout << n.first << std::endl;
-            }
             return strings;
         }
 

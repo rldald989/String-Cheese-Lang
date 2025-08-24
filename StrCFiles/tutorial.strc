@@ -1,5 +1,5 @@
-string hello_world : "Hello, World!"
+string hello_world : "Woah oh oh woah oh oh oh oh, yea murder murder in my mind, a string!"
 int b : 2
 
 printl : b
-printl: "Woah oh oh woah oh oh oh oh, yea murder murder in my mind"
+printl: hello_world

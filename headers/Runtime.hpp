@@ -74,11 +74,13 @@ namespace strc{
                 m_parser.CheckStrings(i);
                 //std::cout << ids[i] << std::endl;
             }
+
+            
         }
         ~Runtime()
         {
-            for(auto& i : m_instructions){
-                delete i.second.value.conv_value;
+            for(auto& n : no_func){
+                std::cout << n.first << ", " << n.second << std::endl;
             }
         }
 
@@ -113,7 +115,12 @@ namespace strc{
                         
                     }
                     else{
-                        std::cout << "SYNTAX ERROR at " << peek(0) << std::endl;
+                        if(no_func.contains(m_position)){
+                            std::cout << no_func[m_position] << std::endl;
+                        }
+                        else{
+                            std::cout << "SYNTAX ERROR at " << peek(0) << std::endl;
+                        }
                     }
 
                 }
@@ -168,7 +175,6 @@ namespace strc{
                 else if(i.second.type == instruction_type::PRINTL){
                     std::cout << *i.second.value.conv_value << std::endl;
                 }
-                
             }
         }
     };
