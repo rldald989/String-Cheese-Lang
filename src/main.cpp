@@ -1,6 +1,6 @@
 #include "../headers/Runtime.hpp"
 
-int position;
+static int position;
 
 char peek(std::string str, int ahead = 1)
 {
@@ -18,8 +18,10 @@ bool contains_file_extension(std::string str, std::string to_find)
     bool does_contain = false;
     while (peek(str) != '\0')
     {
+        position++;
         if(peek(str) == '.')
         {
+            position++;
             while (peek(str) != '\0')
             {
                 buffer.push_back(str[position++]);
