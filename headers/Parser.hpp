@@ -18,6 +18,7 @@ namespace strc{
         std::vector<strc::INT*> ints;
         std::vector<strc::FLOAT*> floats;
         std::vector<strc::STRING*> strings;
+        std::vector<strc::BOOL*> bools;
         std::vector<std::string>& identifiers;
         Lexer m_lexer;
     public:
@@ -55,6 +56,36 @@ namespace strc{
                 {
                     ints.push_back(new INT(strc::MakeInt(std::stoi(identifiers[i + 3]), identifiers[i + 1])));
                 }
+                else if(identifiers[i + 3] == " "){
+                        
+                }
+                else
+                {
+                    std::cout << "SYNTAX ERROR AT: " << identifiers[i] << " "  << identifiers[i + 1] << std::endl;
+                }
+            }
+        }
+
+        void CheckBools(int i)
+        {
+            if(identifiers[i] == "bool")
+            {
+                if(identifiers[i + 2] == ":" && 3 < identifiers.size())
+                {
+                    if(identifiers[i + 3] == "true"){
+                        bools.push_back(new BOOL(strc::MakeBool(true, identifiers[i + 1])));
+                    }
+                    else if(identifiers[i + 3] == "false")
+                    {
+                        bools.push_back(new BOOL(strc::MakeBool(false, identifiers[i + 1])));
+                    }
+                    else if(identifiers[i + 3] == " "){
+                        
+                    }
+                    else{
+                        std::cout << "SYNTAX ERROR AT: " << identifiers[i] << " "  << identifiers[i + 1] << std::endl;
+                    }
+                }
                 else
                 {
                     std::cout << "SYNTAX ERROR AT: " << identifiers[i] << " "  << identifiers[i + 1] << std::endl;
@@ -69,6 +100,10 @@ namespace strc{
                 if(identifiers[i + 2] == ":")
                 {
                     floats.push_back(new FLOAT(strc::MakeFloat(std::stof(identifiers[i + 3]), identifiers[i + 1])));
+                }
+                else if(identifiers[i + 3] == " ")
+                {
+                        
                 }
                 else
                 {
@@ -144,6 +179,11 @@ namespace strc{
         std::vector<strc::STRING*>& GetStrings()
         {
             return strings;
+        }
+
+        std::vector<strc::BOOL*>& GetBools()
+        {
+            return bools;
         }
 
         void PrintIdentifiers(){

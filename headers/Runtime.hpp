@@ -26,6 +26,7 @@ namespace strc{
         std::vector<INT*>& m_ints;
         std::vector<FLOAT*>& m_floats;
         std::vector<STRING*>& m_strings;
+        std::vector<BOOL*>& m_bools;
         std::map <int, Instruction> m_instructions;
         int m_position;
 
@@ -62,9 +63,11 @@ namespace strc{
             : m_parser(parser), ids(m_parser.GetIdentifiers()), 
             m_ints(m_parser.GetInts()), m_floats(m_parser.GetFloats()), 
             m_strings(m_parser.GetStrings()), 
+            m_bools(m_parser.GetBools()), 
             m_position(0)
         {
             for(int i = 0; i < ids.size(); i++){
+                m_parser.CheckBools(i);
                 m_parser.CheckFloats(i);
                 m_parser.CheckInts(i);
                 m_parser.CheckStrings(i);
@@ -77,12 +80,21 @@ namespace strc{
         }
 
         void check_print(instruction_type instruction, std::string instruction_name){
-            while(peek() != "\0"){
-                if(peek() == instruction_name){
+            while(peek() != "\0")
+            {
+                if(peek() == instruction_name)
+                {
                     m_position++;
-                    if(peek() == ":"){
+                    if(peek() == ":")
+                    {
                         m_position++;
                         if(peek() != "\""){
+
+                            for(auto& b : m_bools){
+                                if(peek() == b->name){
+                                    m_instructions[m_position] = Instruction({instruction, b->conv_value});
+                                }
+                            }
                             for(auto& i : m_ints){
                                 if(peek() == i->name){
                                     m_instructions[m_position] = Instruction({instruction, i->conv_value});
@@ -98,6 +110,7 @@ namespace strc{
                                     m_instructions[m_position] = Instruction({instruction, s->conv_value});
                                 }
                             }
+
                         }
                         else{
                             std::string* detected_str = new std::string(detect_string());

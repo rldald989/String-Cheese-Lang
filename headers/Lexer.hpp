@@ -60,6 +60,18 @@ namespace strc{
         return i;
     }
 
+    struct BOOL : public Variable
+    {
+        bool value;
+        std::string name;
+    };
+
+    BOOL MakeBool(bool value, std::string name){
+        std::string* s = value ? new std::string("true") : new std::string("false");
+        BOOL b = {s, value, name};
+        return b;
+    }
+
     static std::string alpha_tokens[] = 
     {
         "int",
