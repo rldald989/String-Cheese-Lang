@@ -64,11 +64,12 @@ int main(int argc, char *argv[])
             parser.ReleaseData();
         }
         else{
+            main_logger._log(strc::log_state::ERROR, "Invalid file input");
+            main_logger.print_last();
             exit(EXIT_FAILURE);
         }
         
     }
-    
 
     return 0;
 }

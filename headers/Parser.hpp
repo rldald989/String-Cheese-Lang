@@ -19,7 +19,6 @@ namespace strc{
         std::vector<strc::FLOAT*> floats;
         std::vector<strc::STRING*> strings;
         std::vector<std::string>& identifiers;
-        std::unordered_map<int, std::string> m_no_func;
         Lexer m_lexer;
     public:
         Parser(Lexer& lexer): m_lexer(lexer), identifiers(m_lexer.GetIdentifiers()){}
@@ -156,10 +155,6 @@ namespace strc{
         std::vector<std::string>& GetIdentifiers()
         {
             return m_lexer.GetIdentifiers();
-        }
-
-        std::unordered_map<int, std::string>& GetNoFunc(){
-            return m_no_func;
         }
 
     };

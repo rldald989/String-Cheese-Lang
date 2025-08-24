@@ -26,7 +26,6 @@ namespace strc{
         std::vector<INT*>& m_ints;
         std::vector<FLOAT*>& m_floats;
         std::vector<STRING*>& m_strings;
-        std::unordered_map<int, std::string>& no_func;
         std::map <int, Instruction> m_instructions;
         int m_position;
 
@@ -53,8 +52,6 @@ namespace strc{
                     output_buffer += peek();
                     m_position++;
                 }
-                if(output_buffer == "\\n"){
-                }
             }
 
             return output_buffer;
@@ -65,29 +62,23 @@ namespace strc{
             : m_parser(parser), ids(m_parser.GetIdentifiers()), 
             m_ints(m_parser.GetInts()), m_floats(m_parser.GetFloats()), 
             m_strings(m_parser.GetStrings()), 
-            no_func(m_parser.GetNoFunc()),
             m_position(0)
         {
             for(int i = 0; i < ids.size(); i++){
                 m_parser.CheckFloats(i);
                 m_parser.CheckInts(i);
                 m_parser.CheckStrings(i);
-                //std::cout << ids[i] << std::endl;
             }
 
             
         }
         ~Runtime()
         {
-            for(auto& n : no_func){
-                std::cout << n.first << ", " << n.second << std::endl;
-            }
         }
 
         void check_print(instruction_type instruction, std::string instruction_name){
             while(peek() != "\0"){
                 if(peek() == instruction_name){
-                    //std::cout << "found print" << std::endl;
                     m_position++;
                     if(peek() == ":"){
                         m_position++;
@@ -114,13 +105,11 @@ namespace strc{
                         }
                         
                     }
+                    else if(peek() == " "){
+                        continue;
+                    }
                     else{
-                        if(no_func.contains(m_position)){
-                            std::cout << no_func[m_position] << std::endl;
-                        }
-                        else{
-                            std::cout << "SYNTAX ERROR at " << peek(0) << std::endl;
-                        }
+                        std::cout << "SYNTAX ERROR at " << peek() << std::endl;
                     }
 
                 }
@@ -144,8 +133,11 @@ namespace strc{
                             }
                         }
                     }
+                    else if(peek() == " "){
+                        continue;
+                    }
                     else{
-                        std::cout << "SYNTAX ERROR at " << peek(0) << std::endl;
+                        std::cout << "SYNTAX ERROR at " << peek() << std::endl;
                     }
 
                 }
