@@ -145,6 +145,24 @@ namespace strc{
                                 m_instructions[m_position] = Instruction({instruction, s->conv_value});
                             }
                         }
+
+                        for(auto& i : m_ints){
+                            if(peek() == i->name){
+                                m_instructions[m_position] = Instruction({instruction, i->conv_value});
+                            }
+                        }
+
+                        for(auto& f : m_floats){
+                            if(peek() == f->name){
+                                m_instructions[m_position] = Instruction({instruction, f->conv_value});
+                            }
+                        }
+
+                        for(auto& b : m_bools){
+                            if(peek() == b->name){
+                                m_instructions[m_position] = Instruction({instruction, b->conv_value});
+                            }
+                        }
                     }
                     else if(peek() == " "){
                         continue;
