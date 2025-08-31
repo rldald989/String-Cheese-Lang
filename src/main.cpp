@@ -55,9 +55,11 @@ int main(int argc, char *argv[])
 
             std::vector<std::string>& id = lexer.GetIdentifiers();
 
-            strc::Parser parser(lexer);
+            strc::VariableManager manager;
+
+            strc::Parser parser(lexer, manager);
             
-            strc::Runtime runtime(parser);
+            strc::Runtime runtime(parser, manager);
 
             runtime.run();
             

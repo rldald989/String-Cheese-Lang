@@ -2,6 +2,7 @@
 
 #include "Lexer.hpp"
 #include <string>
+#include "Variable.hpp"
 #include <algorithm>
 #include <unordered_map>
 
@@ -15,46 +16,27 @@ namespace strc{
     class Parser
     {
     private:
-        std::vector<strc::INT*> ints;
-        std::vector<strc::FLOAT*> floats;
-        std::vector<strc::STRING*> strings;
-        std::vector<strc::BOOL*> bools;
+        VariableManager& m_variable_manager;
         std::vector<std::string>& identifiers;
         Lexer m_lexer;
     public:
-        Parser(Lexer& lexer): m_lexer(lexer), identifiers(m_lexer.GetIdentifiers()){}
+        Parser(Lexer& lexer, VariableManager& manager): m_lexer(lexer), identifiers(m_lexer.GetIdentifiers()), m_variable_manager(manager){}
         ~Parser()
         {
             
         }
 
         void ReleaseData(){
-            for(size_t i = 0; i < ints.size(); i++)
-            {
-                delete ints[i]->conv_value;
-                delete ints[i];
-            }
-
-            for(size_t i = 0; i < floats.size(); i++)
-            {
-                delete floats[i]->conv_value;
-                delete floats[i];
-            }
-
-            for(size_t i = 0; i < strings.size(); i++)
-            {
-                delete strings[i]->conv_value;
-                delete strings[i];
-            }
+            m_variable_manager.ReleaseData();
         }
 
         void CheckInts(int i)
         {
             if(identifiers[i] == "int")
             {
-                if(identifiers[i + 2] == ":" && 3 < identifiers.size())
+                if(identifiers[i + 2] == ":" && i + 3 < identifiers.size())
                 {
-                    ints.push_back(new INT(strc::MakeInt(std::stoi(identifiers[i + 3]), identifiers[i + 1])));
+                    m_variable_manager.AddInt(std::stoi(identifiers[i + 3]), identifiers[i + 1]);
                 }
                 else if(identifiers[i + 3] == " "){
                         
@@ -70,14 +52,14 @@ namespace strc{
         {
             if(identifiers[i] == "bool")
             {
-                if(identifiers[i + 2] == ":" && 3 < identifiers.size())
+                if(identifiers[i + 2] == ":" && i + 3 < identifiers.size())
                 {
                     if(identifiers[i + 3] == "true"){
-                        bools.push_back(new BOOL(strc::MakeBool(true, identifiers[i + 1])));
+                        m_variable_manager.AddBool(true, identifiers[i + 1]);
                     }
                     else if(identifiers[i + 3] == "false")
                     {
-                        bools.push_back(new BOOL(strc::MakeBool(false, identifiers[i + 1])));
+                        m_variable_manager.AddBool(false, identifiers[i + 1]);
                     }
                     else if(identifiers[i + 3] == " "){
                         
@@ -99,7 +81,7 @@ namespace strc{
             {
                 if(identifiers[i + 2] == ":")
                 {
-                    floats.push_back(new FLOAT(strc::MakeFloat(std::stof(identifiers[i + 3]), identifiers[i + 1])));
+                    m_variable_manager.AddFloat(std::stof(identifiers[i + 3]), identifiers[i + 1]);
                 }
                 else if(identifiers[i + 3] == " ")
                 {
@@ -131,32 +113,7 @@ namespace strc{
 
                         }
                     }
-
-                    
-                    
-                    strings.push_back(new STRING(strc::MakeString(new std::string(output_buffer), identifiers[i + 1])));
-
-                    if(output_buffer == "\\n"){
-                        strings.back()->conv_value = new std::string("");
-                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::NEWLINE});
-                    }
-                    else if(output_buffer == "\\t"){
-                        strings.back()->conv_value = new std::string("");
-                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::TAB});
-                    }
-                    else if(output_buffer == "\\\\"){
-                        strings.back()->conv_value = new std::string("");
-                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::BACKSLASH_LIT});
-                    }
-                    else if(output_buffer == "\\\""){
-                        strings.back()->conv_value = new std::string("");
-                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::DOUBLE_QUOTE});
-                    }
-                    else if(output_buffer == "\\\'"){
-                        strings.back()->conv_value = new std::string("");
-                        strings.back()->sub_instructions.push_back({i, sub_instruction_type::SINGLE_QUOTE});
-                    }
-                    
+                    m_variable_manager.AddString(new std::string(output_buffer), identifiers[i + 1]);
 
                 }
                 else
@@ -164,26 +121,6 @@ namespace strc{
                     std::cout << "SYNTAX ERROR AT: " << identifiers[i] << " "  << identifiers[i + 1] << std::endl;
                 }
             }
-        }
-
-        std::vector<strc::INT*>& GetInts()
-        {
-            return ints;
-        }
-
-        std::vector<strc::FLOAT*>& GetFloats()
-        {
-            return floats;
-        }
-
-        std::vector<strc::STRING*>& GetStrings()
-        {
-            return strings;
-        }
-
-        std::vector<strc::BOOL*>& GetBools()
-        {
-            return bools;
         }
 
         void PrintIdentifiers(){

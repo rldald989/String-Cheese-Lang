@@ -6,28 +6,14 @@
 
 namespace strc{
 
-    enum class instruction_type{
-        PRINT,
-        PRINTL,
-        READ,
-        READL
-    };
-
-    struct Instruction{
-        instruction_type type;
-        Variable value;
-    };
-
     class Runtime
     {
     private:
         Parser m_parser;
+        VariableManager& m_variable_manager;
         std::vector<std::string>& ids;
-        std::vector<INT*>& m_ints;
-        std::vector<FLOAT*>& m_floats;
-        std::vector<STRING*>& m_strings;
-        std::vector<BOOL*>& m_bools;
-        std::map <int, Instruction> m_instructions;
+        std::unordered_map <int, Variable> m_operations;
+        std::unordered_map <int, Instruction> m_instructions;
         int m_position;
 
         std::string peek(int ahead = 1) const
@@ -59,11 +45,9 @@ namespace strc{
         }
 
     public:
-        Runtime(const Parser& parser)
+        Runtime(const Parser& parser, VariableManager& manager)
             : m_parser(parser), ids(m_parser.GetIdentifiers()), 
-            m_ints(m_parser.GetInts()), m_floats(m_parser.GetFloats()), 
-            m_strings(m_parser.GetStrings()), 
-            m_bools(m_parser.GetBools()), 
+            m_variable_manager(manager),
             m_position(0)
         {
             for(int i = 0; i < ids.size(); i++){
@@ -72,7 +56,6 @@ namespace strc{
                 m_parser.CheckInts(i);
                 m_parser.CheckStrings(i);
             }
-
             
         }
         ~Runtime()
@@ -90,27 +73,37 @@ namespace strc{
                         m_position++;
                         if(peek() != "\""){
 
-                            for(auto& b : m_bools){
-                                if(peek() == b->name){
-                                    m_instructions[m_position] = Instruction({instruction, b->conv_value});
-                                }
-                            }
-                            for(auto& i : m_ints){
-                                if(peek() == i->name){
-                                    m_instructions[m_position] = Instruction({instruction, i->conv_value});
-                                }
-                            }
-                            for(auto& f : m_floats){
-                                if(peek() == f->name){
-                                    m_instructions[m_position] = Instruction({instruction, f->conv_value});
-                                }
-                            }
-                            for(auto& s : m_strings){
-                                if(peek() == s->name){
-                                    m_instructions[m_position] = Instruction({instruction, s->conv_value});
-                                }
-                            }
+                            m_variable_manager.check_variables(instruction, m_instructions, peek(), m_position);
 
+                        }
+                        else if(peek() == "("){
+                            m_position++;
+                            std::vector<std::string> buffer;
+                            while (peek() != ")")
+                            {
+                                buffer.push_back(*m_instructions[m_position++].value.conv_value);
+                            }
+                            for(int b = 0; b < buffer.size(); b++){
+                                if(b - 1 > 0 && b + 1 < buffer.size()){
+                                    switch (buffer[b][0])
+                                    {
+                                    case '*':
+                                        m_operations[b] = m_variable_manager.calculate_operation(buffer[b - 1], buffer[b + 1], operation_type::MUL);
+                                        break;
+                                    case '/':
+                                        m_operations[b] = m_variable_manager.calculate_operation(buffer[b - 1],buffer[b + 1], operation_type::DIV);
+                                        break;
+                                    case '+':
+                                        m_operations[b] = m_variable_manager.calculate_operation(buffer[b - 1], buffer[b + 1], operation_type::ADD);
+                                        break;
+                                    case '-':
+                                        m_operations[b] = m_variable_manager.calculate_operation(buffer[b - 1], buffer[b + 1], operation_type::SUB);
+                                        break;
+                                    default:
+                                        break;
+                                    }
+                                }
+                            }
                         }
                         else{
                             std::string* detected_str = new std::string(detect_string());
@@ -140,29 +133,7 @@ namespace strc{
                     m_position++;
                     if(peek() == ":"){
                         m_position++;
-                        for(auto& s : m_strings){
-                            if(peek() == s->name){
-                                m_instructions[m_position] = Instruction({instruction, s->conv_value});
-                            }
-                        }
-
-                        for(auto& i : m_ints){
-                            if(peek() == i->name){
-                                m_instructions[m_position] = Instruction({instruction, i->conv_value});
-                            }
-                        }
-
-                        for(auto& f : m_floats){
-                            if(peek() == f->name){
-                                m_instructions[m_position] = Instruction({instruction, f->conv_value});
-                            }
-                        }
-
-                        for(auto& b : m_bools){
-                            if(peek() == b->name){
-                                m_instructions[m_position] = Instruction({instruction, b->conv_value});
-                            }
-                        }
+                        m_variable_manager.check_variables(instruction, m_instructions, peek(), m_position);
                     }
                     else if(peek() == " "){
                         continue;
@@ -186,18 +157,23 @@ namespace strc{
             check_read(instruction_type::READL, "readl");
 
             for(auto& i : m_instructions){
-                if(i.second.type == instruction_type::READL){
-                    std::getline(std::cin, *i.second.value.conv_value);
+                Instruction instruction = i.second;
+                if(instruction.type == instruction_type::READL){
+                    std::getline(std::cin, *instruction.value.conv_value);
                 }
-                else if(i.second.type == instruction_type::READ){
-                    std::cin >> *i.second.value.conv_value;
+                else if(instruction.type == instruction_type::READ){
+                    std::cin >> *instruction.value.conv_value;
                 }
-                else if(i.second.type == instruction_type::PRINT){
-                    std::cout << *i.second.value.conv_value;
+                else if(instruction.type == instruction_type::PRINT){
+                    std::cout << *instruction.value.conv_value;
                 }
-                else if(i.second.type == instruction_type::PRINTL){
-                    std::cout << *i.second.value.conv_value << std::endl;
+                else if(instruction.type == instruction_type::PRINTL){
+                    std::cout << *instruction.value.conv_value << std::endl;
                 }
+            }
+
+            for(auto& o : m_operations){
+                std::cout << o.second.conv_value << std::endl;
             }
         }
     };
