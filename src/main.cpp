@@ -55,6 +55,23 @@ int main(int argc, char *argv[])
 
             std::vector<std::string>& id = lexer.GetIdentifiers();
 
+            std::string d_input;
+            std::cin >> d_input;
+
+            if(d_input == "debug"){
+                for(auto& i : id){
+                    std::cout << i << std::endl;
+                }
+            }
+            else if(d_input == "testing"){
+                
+            }
+            else{
+                main_logger._log(strc::log_state::ERROR, "Invalid command input");
+                main_logger.print_last();
+                exit(EXIT_FAILURE);
+            }
+
             strc::VariableManager manager;
 
             strc::Parser parser(lexer, manager);

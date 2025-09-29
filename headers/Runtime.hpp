@@ -6,6 +6,12 @@
 
 namespace strc{
 
+    #define EMPTY "\0"
+
+    static bool safe_range(int min, int max, int index, int variable_size){
+        return (min + index >= 0 && max + index < variable_size); 
+    }
+
     class Runtime
     {
     private:
@@ -19,14 +25,14 @@ namespace strc{
         std::string peek(int ahead = 1) const
         {
             if(m_position + ahead > ids.size()){
-                return "\0";
+                return EMPTY;
             }
             else{
                 return ids[m_position];
             }
         }
 
-        std::string conusme(){
+        std::string consume(){
             return ids[m_position++];
         }
 
@@ -50,6 +56,7 @@ namespace strc{
             m_variable_manager(manager),
             m_position(0)
         {
+            // Checks for all variable types and adds the variables
             for(int i = 0; i < ids.size(); i++){
                 m_parser.CheckBools(i);
                 m_parser.CheckFloats(i);
@@ -60,10 +67,61 @@ namespace strc{
         }
         ~Runtime()
         {
+            for(auto & o : m_operations){
+                delete o.second.conv_value;
+            }
         }
 
+        // Finds an expression within your scope
+        std::vector<std::string> find_expr(){
+            std::vector<std::string> expression;
+            if(peek() == "("){
+                m_position++;
+                while(peek() != ")"){
+                    expression.push_back(consume());
+                }
+            }
+            else{
+                expression.push_back(EMPTY);
+            }
+
+            return expression;
+        }
+
+        void check_operations(std::vector<std::string> buffer){
+            for(int b = 0; b < buffer.size(); b++){
+                if(safe_range(-1, 1, b, buffer.size())){
+                    if(buffer[b] == "*"){
+                        m_operations[b] = m_variable_manager.calculate_operation(
+                            buffer[b-1], buffer[b+1], 
+                            strc::operation_type::MUL);
+                    }
+                    else if(buffer[b] == "/"){
+                        m_operations[b] = m_variable_manager.calculate_operation(
+                            buffer[b-1], buffer[b+1], 
+                            strc::operation_type::DIV);
+                    }
+                    else if(buffer[b] == "+"){
+                        m_operations[b] = m_variable_manager.calculate_operation(
+                            buffer[b-1], buffer[b+1], 
+                            strc::operation_type::ADD);
+                    }
+                    else if(buffer[b] == "-"){
+                        m_operations[b] = m_variable_manager.calculate_operation(
+                            buffer[b-1], buffer[b+1], 
+                            strc::operation_type::SUB);
+                    }
+                    else{
+                        continue;
+                    }
+                }
+                
+            }
+        }
+
+        // Checks for print statements and adds them to the instructions
         void check_print(instruction_type instruction, std::string instruction_name){
-            while(peek() != "\0")
+            while(peek() != EMPTY)
             {
                 if(peek() == instruction_name)
                 {
@@ -71,41 +129,30 @@ namespace strc{
                     if(peek() == ":")
                     {
                         m_position++;
-                        if(peek() != "\""){
+                        if(peek() == "("){
+                            std::vector<std::string> buffer;
+                            m_position++;
+                            while (peek() != ")")
+                            {
+                                buffer.push_back(consume());
+                            }
+
+                            check_operations(buffer);
+
+                            Variable last = m_operations[0];
+                            Variable current;
+                            for(int i = 0; i < m_operations.size(); i++){
+                                current = last + current;
+                                last = m_operations[i];
+                            }
+                            m_instructions[m_position] = Instruction({instruction, current.conv_value});
+                        }
+                        else if(peek() != "\""){
 
                             m_variable_manager.check_variables(instruction, m_instructions, peek(), m_position);
 
                         }
-                        else if(peek() == "("){
-                            m_position++;
-                            std::vector<std::string> buffer;
-                            while (peek() != ")")
-                            {
-                                buffer.push_back(*m_instructions[m_position++].value.conv_value);
-                            }
-                            for(int b = 0; b < buffer.size(); b++){
-                                if(b - 1 > 0 && b + 1 < buffer.size()){
-                                    switch (buffer[b][0])
-                                    {
-                                    case '*':
-                                        m_operations[b] = m_variable_manager.calculate_operation(buffer[b - 1], buffer[b + 1], operation_type::MUL);
-                                        break;
-                                    case '/':
-                                        m_operations[b] = m_variable_manager.calculate_operation(buffer[b - 1],buffer[b + 1], operation_type::DIV);
-                                        break;
-                                    case '+':
-                                        m_operations[b] = m_variable_manager.calculate_operation(buffer[b - 1], buffer[b + 1], operation_type::ADD);
-                                        break;
-                                    case '-':
-                                        m_operations[b] = m_variable_manager.calculate_operation(buffer[b - 1], buffer[b + 1], operation_type::SUB);
-                                        break;
-                                    default:
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        else{
+                        else if(peek() != "("){
                             std::string* detected_str = new std::string(detect_string());
                             m_instructions[m_position] = Instruction({instruction, detected_str});
                         }
@@ -127,7 +174,7 @@ namespace strc{
         }
 
         void check_read(instruction_type instruction, std::string instruction_name){
-            while(peek() != "\0"){
+            while(peek() != EMPTY){
                 if(peek() == instruction_name){
                     //std::cout << "found print" << std::endl;
                     m_position++;
@@ -173,7 +220,7 @@ namespace strc{
             }
 
             for(auto& o : m_operations){
-                std::cout << o.second.conv_value << std::endl;
+                //std::cout << *o.second.conv_value << std::endl;
             }
         }
     };

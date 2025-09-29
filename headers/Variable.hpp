@@ -89,15 +89,15 @@ namespace strc
             }
         }
 
-        Variable get_value(std::string input_str)
+        Variable& get_value(std::string input_str)
         {
-            Variable result;
+            Variable* result;
             bool is_variable = false;
             for(auto& i : m_ints)
             {
-                if(i->name == input_str){
+                if(input_str == i->name){
                     is_variable = true;
-                    result = *i;
+                    result = i;
                 }
                 else{
                     continue;
@@ -105,9 +105,9 @@ namespace strc
             }
             for(auto& f : m_floats)
             {
-                if(f->name == input_str){
+                if(input_str == f->name){
                     is_variable = true;
-                    result = *f;
+                    result = f;
                 }
                 else{
                     continue;
@@ -116,15 +116,45 @@ namespace strc
             if(input_str.find('.') != std::string::npos && !is_variable)
             {
                 AddFloat(std::stof(input_str), "");
+                result = m_floats.back();
             }
             else if(!is_variable)
             {
                 AddInt(std::stoi(input_str), "");
+                result = m_ints.back();
+            }
+            else if(is_variable){
+
             }
             else{
                 std::cout << "SYNTAX ERROR at " << input_str << std::endl;
             }
-            return result;
+            return *result;
+        }
+
+        Variable calculate_operation(std::string a, std::string b, operation_type type)
+        {
+            Variable& _a = get_value(a);
+            Variable& _b = get_value(b);
+            switch (type)
+            {
+            case operation_type::MUL:
+                return _a * _b;
+                break;
+            case operation_type::DIV:
+                return _a / _b;
+                break;
+            case operation_type::ADD:
+                return _a + _b;
+                break;
+            case operation_type::SUB:
+                return _a - _b;
+                break;
+            default:
+                return {};
+                break;
+                
+            }
         }
 
         void PrintValues(){
@@ -186,22 +216,7 @@ namespace strc
             }
         }
 
-        Variable calculate_operation(std::string a, std::string b, operation_type type)
-        {
-            Variable _a = get_value(a);
-            Variable _b = get_value(b);
-            switch (type)
-            {
-            case operation_type::MUL:
-                //return get_value(a) * get_value(b);
-                break;
-            
-            default:
-                break;
-                
-            }
-            return {};
-        }
+        
 
     private:
         std::vector<INT*> m_ints;
